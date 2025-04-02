@@ -36,10 +36,11 @@ export default function AddToCartButton({
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
+      console.log("Sending cart data from button:", { plantId, quantity: 1 });
       const response = await apiRequest('POST', '/api/cart', { 
         plantId: plantId,
-        quantity: 1,
-        userId: user!.id // This will be overridden by the server
+        quantity: 1 
+        // Don't need to send userId - server will set it from the session
       });
       return response;
     },

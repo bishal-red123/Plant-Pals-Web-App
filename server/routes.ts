@@ -458,11 +458,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/cart", isAuthenticated, isCorporate, async (req, res) => {
     try {
+      console.log("Cart POST request body:", JSON.stringify(req.body));
       const user = req.user as any;
-      const cartItemData = insertCartItemSchema.parse(req.body);
       
-      // Ensure userId is set to the current user's id
-      cartItemData.userId = user.id;
+      // Manually create cart item data with proper types
+      const cartItemData = {
+        userId: user.id,
+        plantId: parseInt(req.body.plantId),
+        quantity: parseInt(req.body.quantity) || 1
+      };
+      
+      console.log("Processed cart item data:", JSON.stringify(cartItemData));
       
       // Check if the plant exists
       const plant = await storage.getPlantById(cartItemData.plantId);
@@ -478,6 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cartItem = await storage.addCartItem(cartItemData);
       res.status(201).json(cartItem);
     } catch (error: any) {
+      console.error("Cart error:", error.message);
       res.status(400).json({ message: error.message });
     }
   });

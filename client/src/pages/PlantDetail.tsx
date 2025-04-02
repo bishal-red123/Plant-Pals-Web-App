@@ -53,6 +53,7 @@ const PlantDetail = () => {
   const { mutate: addToCart, isPending } = useMutation({
     mutationFn: async () => {
       if (!data?.plant) throw new Error("No plant data");
+      console.log("Sending cart data:", { plantId: data.plant.id, quantity: 1 });
       const response = await apiRequest('POST', '/api/cart', { 
         plantId: data.plant.id,
         quantity: 1  // Explicitly set quantity as a number
