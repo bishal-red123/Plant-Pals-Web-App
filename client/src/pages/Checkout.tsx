@@ -279,17 +279,28 @@ export default function Checkout() {
       return;
     }
 
-    // Create PaymentIntent as soon as the page loads and we have the total
-    if (totalAmount > 0) {
-      apiRequest("POST", "/api/create-payment-intent", { amount: totalAmount })
-        .then((res) => res.json())
+    // Create PaymentIntent as soon as the page loads and we have cart items
+    if (cartItems && cartItems.length > 0) {
+      console.log("Initializing payment intent for checkout...");
+      
+      // The server will calculate the total from the cart items
+      apiRequest("POST", "/api/create-payment-intent", {})
+        .then((res) => {
+          if (!res.ok) {
+            return res.json().then(data => {
+              throw new Error(data.message || "Failed to create payment");
+            });
+          }
+          return res.json();
+        })
         .then((data) => {
+          console.log("Payment intent created successfully");
           setClientSecret(data.clientSecret);
         })
         .catch(err => {
           toast({
-            title: "Error",
-            description: "Failed to initialize payment. Please try again.",
+            title: "Payment Error",
+            description: err.message || "Failed to initialize payment. Please try again.",
             variant: "destructive",
           });
           console.error("Payment intent error:", err);

@@ -19,15 +19,31 @@ import { Strategy as LocalStrategy } from "passport-local";
 import MemoryStore from "memorystore";
 import Stripe from "stripe";
 
+// Check for required environment variables
 if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn('STRIPE_SECRET_KEY is not set. Stripe payment features will not work');
+  console.error('STRIPE_SECRET_KEY is not set. Stripe payment features will not work.');
+  console.error('Set this value in your environment variables');
 }
 
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+if (!process.env.VITE_STRIPE_PUBLIC_KEY) {
+  console.error('VITE_STRIPE_PUBLIC_KEY is not set. Client-side Stripe integration will not work.');
+  console.error('Set this value in your environment variables');
+}
+
+let stripe: Stripe | null = null;
+
+// Initialize Stripe with better error handling
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2023-10-16" as any,
-    })
-  : null;
+    });
+    console.log('Stripe initialized successfully');
+  }
+} catch (error: any) {
+  console.error('Failed to initialize Stripe:', error.message);
+  // Don't throw error here - we'll handle this gracefully at the API level
+}
 
 const SessionStore = MemoryStore(session);
 
@@ -690,29 +706,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment processing
   app.post("/api/create-payment-intent", isAuthenticated, isCorporate, async (req, res) => {
     try {
+      console.log("Creating payment intent with Stripe"); 
+      
       if (!stripe) {
+        console.error("Stripe is not configured");
         return res.status(500).json({ message: "Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable." });
       }
 
-      const { amount } = req.body;
+      // Get cart items to calculate the payment amount
+      const user = req.user as any;
+      const cartItems = await storage.getCartItems(user.id);
       
-      if (!amount || typeof amount !== 'number' || amount <= 0) {
-        return res.status(400).json({ message: "Valid amount is required" });
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Your cart is empty" });
       }
-
+      
+      // Calculate total amount from cart items
+      let totalAmount = 0;
+      const items = await Promise.all(
+        cartItems.map(async (item) => {
+          const plant = await storage.getPlantById(item.plantId);
+          if (!plant) {
+            throw new Error(`Plant with id ${item.plantId} not found`);
+          }
+          const itemTotal = plant.price * item.quantity;
+          totalAmount += itemTotal;
+          return { name: plant.name, price: plant.price, quantity: item.quantity };
+        })
+      );
+      
+      console.log(`Creating payment intent for total amount: ${totalAmount}`);
+      
       // Create a PaymentIntent with the order amount and currency
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: "inr", // Using INR for the Indian market
+        amount: Math.round(totalAmount * 100), // Convert to cents
+        currency: "usd", // Changed from INR to USD for broader compatibility
         automatic_payment_methods: {
           enabled: true,
         },
+        metadata: {
+          userId: user.id.toString(),
+          email: user.email || 'unknown',
+          items: JSON.stringify(items.map(i => `${i.name} x${i.quantity}`))
+        }
       });
 
+      console.log("Successfully created payment intent");
+      
       res.json({
         clientSecret: paymentIntent.client_secret,
+        amount: totalAmount,
+        items: items
       });
     } catch (error: any) {
+      console.error("Stripe payment intent error:", error.message);
       res.status(500).json({ message: error.message || "Failed to create payment intent" });
     }
   });
