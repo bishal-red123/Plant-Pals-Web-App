@@ -51,7 +51,9 @@ import {
 } from "lucide-react";
 
 // Extend the plant schema with validation
-const plantFormSchema = insertPlantSchema.extend({});
+const plantFormSchema = insertPlantSchema.extend({
+  imageUrl: z.string().optional().or(z.literal('')),
+});
 
 type PlantFormValues = z.infer<typeof plantFormSchema>;
 
@@ -89,9 +91,10 @@ export default function AddPlant() {
 
     setIsSubmitting(true);
     
-    // Make sure vendorId is included
+    // Make sure vendorId is included and handle empty strings
     const submitData = {
       ...values,
+      imageUrl: values.imageUrl || null, // Convert empty string to null
       vendorId: user.id
     };
     
@@ -332,7 +335,7 @@ export default function AddPlant() {
                               placeholder="https://example.com/image.jpg" 
                               {...field}
                               value={field.value || ""}
-                              onChange={(e) => field.onChange(e.target.value || null)}
+                              onChange={(e) => field.onChange(e.target.value)}
                             />
                           </FormControl>
                           <FormDescription>

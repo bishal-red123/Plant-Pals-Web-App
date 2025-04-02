@@ -143,7 +143,9 @@ export const plantReminders = pgTable("plant_reminders", {
 
 // Define insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
-export const insertPlantSchema = createInsertSchema(plants).omit({ id: true, createdAt: true });
+export const insertPlantSchema = createInsertSchema(plants).omit({ id: true, createdAt: true }).extend({
+  imageUrl: z.string().nullable().optional(),
+});
 export const insertCareGuideSchema = createInsertSchema(careGuides).omit({ id: true, createdAt: true });
 export const insertPlantCategorySchema = createInsertSchema(plantCategories).omit({ id: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, orderDate: true });
