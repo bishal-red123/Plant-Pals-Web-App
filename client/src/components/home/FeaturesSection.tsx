@@ -1,8 +1,8 @@
-import { Plant, FileText, Truck } from "lucide-react";
+import { Leaf, FileText, Truck } from "lucide-react";
 
 const features = [
   {
-    icon: <Plant className="text-xl text-primary" />,
+    icon: <Leaf className="text-xl text-primary" />,
     title: "Expert-Vetted Plants",
     description: "All plants are selected by experts for their ability to thrive in office environments."
   },
@@ -23,7 +23,7 @@ const FeaturesSection = () => {
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="font-montserrat text-2xl md:text-3xl font-bold text-foreground mb-2">Why Choose GreenSpace</h2>
+          <h2 className="font-montserrat text-2xl md:text-3xl font-bold text-foreground mb-2">Why Choose PlantPals</h2>
           <p className="font-lato text-gray-600 max-w-2xl mx-auto">The complete platform for bringing natural elements into your workspace</p>
         </div>
         

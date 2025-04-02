@@ -49,7 +49,7 @@ const Header = () => {
               <Leaf className="text-primary text-2xl" />
               <Link href="/">
                 <h1 className="text-xl md:text-2xl font-montserrat font-bold text-foreground cursor-pointer">
-                  <span className="text-primary">Green</span>Space
+                  <span className="text-primary">Plant</span>Pals
                 </h1>
               </Link>
             </div>

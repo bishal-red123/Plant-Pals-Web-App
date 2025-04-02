@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Plant, MapPin, Phone, Mail, Clock } from "lucide-react";
+import { Leaf, MapPin, Phone, Mail, Clock } from "lucide-react";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 
 const Footer = () => {
@@ -9,9 +9,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <Plant className="text-primary text-2xl" />
+              <Leaf className="text-primary text-2xl" />
               <h3 className="text-xl font-montserrat font-bold">
-                <span className="text-primary">Green</span>Space
+                <span className="text-primary">Plant</span>Pals
               </h3>
             </div>
             <p className="text-gray-300 mb-6">
@@ -69,7 +69,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Mail className="mr-3 text-primary" />
-                <span>hello@greenspace.com</span>
+                <span>hello@plantpals.com</span>
               </li>
               <li className="flex items-center">
                 <Clock className="mr-3 text-primary" />
@@ -81,7 +81,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-700 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} GreenSpace. All rights reserved.
+            &copy; {new Date().getFullYear()} PlantPals. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link href="/privacy" className="text-gray-400 text-sm hover:text-primary transition-colors">Privacy Policy</Link>

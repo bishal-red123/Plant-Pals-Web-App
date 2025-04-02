@@ -8,7 +8,7 @@ import {
   InfoIcon,
   CalendarCheck, 
   BarChart4, 
-  FirstAid, 
+  HelpCircle, 
   ArrowRight
 } from "lucide-react";
 import { Plant, CareGuide } from "@shared/schema";
@@ -134,7 +134,7 @@ const PlantCareSection = () => {
               
               <div className="flex items-start">
                 <div className="bg-primary bg-opacity-10 rounded-full p-2 mt-1 mr-4">
-                  <FirstAid className="text-primary h-5 w-5" />
+                  <HelpCircle className="text-primary h-5 w-5" />
                 </div>
                 <div>
                   <h4 className="font-montserrat font-medium">Troubleshooting Guides</h4>

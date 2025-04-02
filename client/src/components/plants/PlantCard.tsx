@@ -4,7 +4,7 @@ import {
   Heart, 
   Droplet, 
   Sun, 
-  Seedling, 
+  Leaf, 
   Star,
   StarHalf 
 } from "lucide-react";
@@ -91,7 +91,7 @@ const PlantCard = ({ plant }: PlantCardProps) => {
               <span className="text-xs text-gray-500">{renderWaterLevel(plant.lightRequirement)}</span>
             </div>
             <div className="flex flex-col items-center">
-              <Seedling className="text-green-400 h-4 w-4" />
+              <Leaf className="text-green-400 h-4 w-4" />
               <span className="text-xs text-gray-500">{plant.difficulty === 'beginner' ? 'Easy' : plant.difficulty === 'intermediate' ? 'Medium' : 'Hard'}</span>
             </div>
           </div>

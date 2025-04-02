@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Plant } from "lucide-react";
+import { X, Leaf } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,9 +27,9 @@ const LoginModal = ({ isOpen, onClose, type }: LoginModalProps) => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-2">
-            <Plant className="text-primary text-2xl" />
+            <Leaf className="text-primary text-2xl" />
             <h3 className="text-xl font-montserrat font-bold text-foreground">
-              <span className="text-primary">Green</span>Space
+              <span className="text-primary">Plant</span>Pals
             </h3>
           </div>
           <DialogTitle>
