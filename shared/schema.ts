@@ -20,6 +20,9 @@ export const orderStatusEnum = pgEnum('order_status', ['pending', 'processing', 
 // Payment Method Enum
 export const paymentMethodEnum = pgEnum('payment_method', ['credit_card', 'debit_card', 'upi', 'net_banking', 'cash_on_delivery']);
 
+// Reminder Frequency Enum
+export const reminderFrequencyEnum = pgEnum('reminder_frequency', ['daily', 'weekly', 'biweekly', 'monthly']);
+
 // Users Table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -121,6 +124,21 @@ export const payments = pgTable("payments", {
   paymentStatus: text("payment_status").notNull(),
   transactionId: text("transaction_id"),
   paymentDate: timestamp("payment_date").defaultNow().notNull(),
+});
+
+// Plant Care Reminders Table
+export const plantReminders = pgTable("plant_reminders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  plantId: integer("plant_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  frequency: reminderFrequencyEnum("frequency").notNull(),
+  nextReminder: timestamp("next_reminder").notNull(),
+  lastReminder: timestamp("last_reminder"),
+  isActive: boolean("is_active").notNull().default(true),
+  notificationType: text("notification_type").notNull().default('email'),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Define insert schemas

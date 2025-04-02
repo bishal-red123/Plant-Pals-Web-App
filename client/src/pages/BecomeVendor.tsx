@@ -25,6 +25,9 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 // Extend the user schema with validation
 const vendorFormSchema = insertUserSchema.extend({
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+  companyName: z.string().min(1, "Company name is required"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  location: z.string().min(1, "Location is required"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -153,7 +156,11 @@ export default function BecomeVendor() {
                       <FormItem>
                         <FormLabel>Company Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Green Gardens Nursery" {...field} />
+                          <Input 
+                            placeholder="Green Gardens Nursery" 
+                            {...field} 
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -181,7 +188,11 @@ export default function BecomeVendor() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="+91 98765 43210" {...field} />
+                          <Input 
+                            placeholder="+91 98765 43210" 
+                            {...field} 
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -195,7 +206,11 @@ export default function BecomeVendor() {
                       <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <Input placeholder="Mumbai, India" {...field} />
+                          <Input 
+                            placeholder="Mumbai, India" 
+                            {...field} 
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

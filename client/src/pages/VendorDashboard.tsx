@@ -125,7 +125,13 @@ export default function VendorDashboard() {
     
     setIsSubmitting(true);
     try {
-      const response = await apiRequest("POST", "/api/plants", data);
+      // Add vendorId to the request data
+      const plantData = {
+        ...data,
+        vendorId: user.id
+      };
+      
+      const response = await apiRequest("POST", "/api/plants", plantData);
       
       if (!response.ok) {
         const errorData = await response.json();
