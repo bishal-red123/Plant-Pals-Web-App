@@ -10,7 +10,8 @@ import {
   insertReviewSchema,
   insertCartItemSchema,
   insertPaymentSchema,
-  orderStatusEnum
+  orderStatusEnum,
+  type InsertPlant
 } from "@shared/schema";
 import session from "express-session";
 import passport from "passport";
@@ -24,7 +25,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2023-10-16" as any,
     })
   : null;
 
@@ -134,6 +135,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message });
     }
   });
+  
+  // Get plants for a specific vendor
+  app.get("/api/plants/vendor/:id", async (req, res) => {
+    try {
+      const vendorId = parseInt(req.params.id);
+      const plants = await storage.getPlantsByVendor(vendorId);
+      res.json(plants);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
 
   app.get("/api/plants/:id", async (req, res) => {
     try {
@@ -208,6 +220,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newCareGuide = await storage.createCareGuide(careGuideData);
       res.status(201).json(newCareGuide);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  app.patch("/api/plants/:id", isAuthenticated, isVendor, async (req, res) => {
+    try {
+      const plantId = parseInt(req.params.id);
+      const plant = await storage.getPlantById(plantId);
+      
+      if (!plant) {
+        return res.status(404).json({ message: "Plant not found" });
+      }
+      
+      // Check if plant belongs to vendor
+      const user = req.user as any;
+      if (plant.vendorId !== user.id) {
+        return res.status(403).json({ message: "You don't have permission to update this plant" });
+      }
+      
+      // Only allow updating certain fields
+      const allowedUpdates = ['name', 'scientificName', 'description', 'price', 'inStock', 'imageUrl', 'waterRequirement', 'lightRequirement', 'difficulty'];
+      const updateData: Partial<InsertPlant> = {};
+      
+      Object.keys(req.body).forEach(key => {
+        if (allowedUpdates.includes(key)) {
+          updateData[key as keyof InsertPlant] = req.body[key];
+        }
+      });
+      
+      const updatedPlant = await storage.updatePlant(plantId, updateData);
+      res.json(updatedPlant);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

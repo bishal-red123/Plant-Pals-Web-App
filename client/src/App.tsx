@@ -14,6 +14,8 @@ import Dashboard from "@/pages/Dashboard";
 import Cart from "@/pages/Cart";
 import Checkout from "@/pages/Checkout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import BecomeVendor from "@/pages/BecomeVendor"; 
+import VendorDashboard from "@/pages/VendorDashboard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -33,6 +35,8 @@ function Router() {
           <Route path="/cart" component={Cart} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/checkout-success" component={CheckoutSuccess} />
+          <Route path="/become-vendor" component={BecomeVendor} />
+          <Route path="/vendor-dashboard" component={VendorDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

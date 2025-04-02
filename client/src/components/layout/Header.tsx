@@ -101,6 +101,11 @@ const Header = () => {
                   For Business
                 </a>
               </Link>
+              <Link href="/become-vendor">
+                <a className={`font-montserrat text-sm font-medium ${isActive('/become-vendor') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                  Become a Vendor
+                </a>
+              </Link>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -205,6 +210,13 @@ const Header = () => {
                       <Link href="/for-business">
                         <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
                           For Business
+                        </a>
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/become-vendor">
+                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                          Become a Vendor
                         </a>
                       </Link>
                     </SheetClose>
