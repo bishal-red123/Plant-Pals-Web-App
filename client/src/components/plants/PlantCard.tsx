@@ -41,9 +41,12 @@ const PlantCard = ({ plant }: PlantCardProps) => {
       <div className="relative">
         <Link href={`/plants/${plant.id}`}>
           <img 
-            src={(plant.imageUrl as string) || '/placeholder-plant.jpg'} 
+            src={plant.imageUrl || 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3'} 
             alt={plant.name} 
             className="w-full h-48 object-cover cursor-pointer" 
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3';
+            }}
           />
         </Link>
         <div className="absolute top-3 left-3">

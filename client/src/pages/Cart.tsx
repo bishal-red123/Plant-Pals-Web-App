@@ -257,15 +257,16 @@ export default function Cart() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
-                          {item.plant.imageUrl && (
-                            <div className="w-12 h-12 overflow-hidden rounded">
-                              <img 
-                                src={item.plant.imageUrl} 
-                                alt={item.plant.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
+                          <div className="w-12 h-12 overflow-hidden rounded">
+                            <img 
+                              src={item.plant.imageUrl || 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3'} 
+                              alt={item.plant.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3';
+                              }}
+                            />
+                          </div>
                           <div>
                             <Link href={`/plants/${item.plant.id}`} className="font-medium hover:underline">
                               {item.plant.name}

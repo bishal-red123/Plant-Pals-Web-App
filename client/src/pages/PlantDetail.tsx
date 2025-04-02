@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { 
   Droplet, 
@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 type PlantDetailResponse = {
   plant: Plant;
@@ -38,6 +39,7 @@ const PlantDetail = () => {
   const [, params] = useRoute("/plants/:id");
   const plantId = params?.id;
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery<PlantDetailResponse>({
     queryKey: [`/api/plants/${plantId}`],
@@ -48,11 +50,35 @@ const PlantDetail = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const { mutate: addToCart, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!data?.plant) throw new Error("No plant data");
+      const response = await apiRequest('POST', '/api/cart', { 
+        plantId: data.plant.id,
+        quantity: 1
+      });
+      return response;
+    },
+    onSuccess: () => {
+      if (!data?.plant) return;
+      toast({
+        title: "Added to cart",
+        description: `${data.plant.name} has been added to your cart.`,
+      });
+      // Invalidate cart query
+      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add item to cart",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddToCart = () => {
-    toast({
-      title: "Added to cart",
-      description: `${data?.plant.name} has been added to your cart.`,
-    });
+    addToCart();
   };
 
   if (isLoading) {
@@ -114,9 +140,12 @@ const PlantDetail = () => {
         <div className="w-full md:w-1/2">
           <div className="bg-white rounded-lg overflow-hidden shadow-md mb-6">
             <img 
-              src={plant.imageUrl} 
+              src={plant.imageUrl || 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3'} 
               alt={plant.name} 
               className="w-full h-80 object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1545239705-1564e58b9e4a?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3';
+              }}
             />
           </div>
           
@@ -240,8 +269,13 @@ const PlantDetail = () => {
             </div>
             
             <div className="space-x-3 mb-6">
-              <Button size="lg" onClick={handleAddToCart} className="bg-primary hover:bg-primary/90 text-white">
-                Add to Cart
+              <Button 
+                size="lg" 
+                onClick={handleAddToCart} 
+                className="bg-primary hover:bg-primary/90 text-white"
+                disabled={isPending}
+              >
+                {isPending ? 'Adding...' : 'Add to Cart'}
               </Button>
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
                 Save for Later
@@ -275,12 +309,12 @@ const PlantDetail = () => {
                   <div>
                     <h3 className="font-montserrat font-semibold mb-2">Weekly Care Routine</h3>
                     <ul className="space-y-2">
-                      {careGuide.weeklyRoutine.split('.').filter(item => item.trim().length > 0).map((item, index) => (
+                      {careGuide.weeklyRoutine?.split('.').filter(item => item.trim().length > 0).map((item, index) => (
                         <li key={index} className="flex items-start">
                           <CheckCircle className="text-primary mt-1 mr-2 h-4 w-4" />
                           <span className="text-sm">{item.trim()}</span>
                         </li>
-                      ))}
+                      )) || <li>No weekly routine specified</li>}
                     </ul>
                   </div>
                   
