@@ -16,6 +16,8 @@ import Checkout from "@/pages/Checkout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import BecomeVendor from "@/pages/BecomeVendor"; 
 import VendorDashboard from "@/pages/VendorDashboard";
+import AddPlant from "@/pages/AddPlant";
+import MyPlants from "@/pages/MyPlants";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -37,6 +39,8 @@ function Router() {
           <Route path="/checkout-success" component={CheckoutSuccess} />
           <Route path="/become-vendor" component={BecomeVendor} />
           <Route path="/vendor-dashboard" component={VendorDashboard} />
+          <Route path="/add-plant" component={AddPlant} />
+          <Route path="/my-plants" component={MyPlants} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { insertPlantSchema, insertCareGuideSchema, type Plant } from "@shared/schema";
 import { z } from "zod";
+import { useLocation } from "wouter";
 
 import {
   Form,
@@ -67,11 +68,12 @@ const careGuideFormSchema = insertCareGuideSchema.omit({ plantId: true });
 type CareGuideFormValues = z.infer<typeof careGuideFormSchema>;
 
 export default function VendorDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("plants");
   const [selectedPlantId, setSelectedPlantId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setLocation] = useLocation();
   
   // Get vendor plants
   const { data: plants, isLoading: plantsLoading, error: plantsError } = useQuery<Plant[]>({
@@ -272,7 +274,11 @@ export default function VendorDashboard() {
         className="space-y-6"
       >
         <TabsList className="grid grid-cols-3 w-full sm:w-fit">
-          <TabsTrigger value="plants" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="plants" 
+            className="flex items-center gap-2"
+            onClick={() => setLocation("/my-plants")}
+          >
             <Leaf className="h-4 w-4" />
             <span className="hidden sm:inline">My Plants</span>
           </TabsTrigger>
@@ -280,7 +286,11 @@ export default function VendorDashboard() {
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Orders</span>
           </TabsTrigger>
-          <TabsTrigger value="add" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="add" 
+            className="flex items-center gap-2"
+            onClick={() => setLocation("/add-plant")}
+          >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Plant</span>
           </TabsTrigger>
@@ -293,7 +303,7 @@ export default function VendorDashboard() {
               <CardTitle className="flex items-center justify-between">
                 <span>My Plants</span>
                 <Button 
-                  onClick={() => setSelectedTab("add")}
+                  onClick={() => setLocation("/add-plant")}
                   variant="outline" 
                   size="sm" 
                   className="flex items-center gap-2"
@@ -323,7 +333,7 @@ export default function VendorDashboard() {
                 <div className="text-center py-8">
                   <p className="text-gray-500 mb-4">You haven't added any plants yet</p>
                   <Button 
-                    onClick={() => setSelectedTab("add")}
+                    onClick={() => setLocation("/add-plant")}
                     variant="default"
                     className="flex items-center gap-2 mx-auto"
                   >
