@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 // A simple script to verify Stripe API keys
 async function verifyStripeKey() {
