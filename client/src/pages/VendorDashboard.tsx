@@ -260,7 +260,7 @@ export default function VendorDashboard() {
             Vendor Dashboard
           </h1>
           <p className="text-gray-600">
-            Manage your plants, orders, and vendor profile
+            List plants for sale to corporate clients, manage inventory, and track customer orders
           </p>
         </div>
       </div>
@@ -303,7 +303,7 @@ export default function VendorDashboard() {
                 </Button>
               </CardTitle>
               <CardDescription>
-                Manage your plant catalog
+                List your plants for sale to corporate clients
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -404,7 +404,7 @@ export default function VendorDashboard() {
             <CardHeader>
               <CardTitle>Orders</CardTitle>
               <CardDescription>
-                View and manage customer orders
+                Track and manage corporate client orders
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -431,7 +431,7 @@ export default function VendorDashboard() {
             <CardHeader>
               <CardTitle>Add New Plant</CardTitle>
               <CardDescription>
-                Enter details to add a new plant to your catalog
+                Add a new plant to your sales catalog for corporate clients
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -475,7 +475,7 @@ export default function VendorDashboard() {
                         <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe the plant and its benefits for office spaces..." 
+                            placeholder="Describe the plant's benefits for corporate office environments..." 
                             rows={4}
                             {...field} 
                           />
@@ -652,8 +652,8 @@ export default function VendorDashboard() {
               <CardTitle>Add Care Guide</CardTitle>
               <CardDescription>
                 {selectedPlantId 
-                  ? `Add care instructions for the selected plant`
-                  : `Select a plant from the list first`
+                  ? `Add care instructions to help corporate clients maintain their plants`
+                  : `Select a plant from your catalog first`
                 }
               </CardDescription>
             </CardHeader>

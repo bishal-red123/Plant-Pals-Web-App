@@ -75,7 +75,7 @@ export default function BecomeVendor() {
       setSuccess(true);
       toast({
         title: "Registration successful!",
-        description: "Your vendor account has been created. You'll be redirected to your dashboard.",
+        description: "Your vendor account has been created. You'll be redirected to your dashboard where you can list plants for sale.",
       });
       
       // Wait 2 seconds before redirecting to dashboard
@@ -103,7 +103,8 @@ export default function BecomeVendor() {
             Become a Vendor
           </h1>
           <p className="text-gray-600">
-            Join our marketplace and connect with corporate clients looking for quality office plants.
+            Join our marketplace to sell your plants to corporate clients. As a vendor, you'll list your inventory, 
+            set prices, and fulfill orders from businesses looking for quality office plants.
             Complete the form below to create your vendor account.
           </p>
         </div>
@@ -113,7 +114,7 @@ export default function BecomeVendor() {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertTitle className="text-green-800">Registration Successful!</AlertTitle>
             <AlertDescription className="text-green-700">
-              Your vendor account has been created. You will be redirected to your dashboard shortly.
+              Your vendor account has been created. You will be redirected to your dashboard where you can start adding plants for sale.
             </AlertDescription>
           </Alert>
         ) : error ? (
@@ -128,7 +129,7 @@ export default function BecomeVendor() {
           <CardHeader>
             <CardTitle>Vendor Registration</CardTitle>
             <CardDescription>
-              Fill in your details to create your vendor account
+              Register as a plant supplier and start selling to corporate clients
             </CardDescription>
           </CardHeader>
           <CardContent>
