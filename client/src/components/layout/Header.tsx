@@ -137,8 +137,20 @@ const Header = () => {
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link href={user?.userType === 'vendor' ? "/vendor-dashboard" : "/dashboard"}>
+                        {user?.userType === 'vendor' ? "Vendor Dashboard" : "Dashboard"}
+                      </Link>
                     </DropdownMenuItem>
+                    {user?.userType === 'vendor' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/add-plant">Add Plant</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-plants">My Plants</Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
@@ -208,11 +220,31 @@ const Header = () => {
                         </Link>
                       </SheetClose>
                     )}
-                    <SheetClose asChild>
-                      <Link href="/dashboard" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                        My Account
-                      </Link>
-                    </SheetClose>
+                    {user?.userType === 'vendor' ? (
+                      <>
+                        <SheetClose asChild>
+                          <Link href="/vendor-dashboard" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                            Vendor Dashboard
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link href="/add-plant" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                            Add Plant
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link href="/my-plants" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                            My Plants
+                          </Link>
+                        </SheetClose>
+                      </>
+                    ) : (
+                      <SheetClose asChild>
+                        <Link href="/dashboard" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                          My Account
+                        </Link>
+                      </SheetClose>
+                    )}
                     {user && (
                       <Button 
                         variant="ghost" 
