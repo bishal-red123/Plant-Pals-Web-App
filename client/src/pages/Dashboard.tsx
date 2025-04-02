@@ -85,7 +85,7 @@ const Dashboard = () => {
                     {user.fullName.charAt(0)}
                   </div>
                 </div>
-                <h2 className="font-montserrat text-lg font-semibold">{user.fullName}</h2>
+                <span className="font-montserrat text-lg font-semibold">{user.fullName}</span>
                 <p className="text-sm text-gray-500 font-normal capitalize">{user.userType} Account</p>
               </CardTitle>
             </CardHeader>

@@ -143,11 +143,9 @@ const PlantCareSection = () => {
               </div>
             </div>
             
-            <Link href="/care-guides">
-              <a className="inline-flex items-center font-montserrat font-medium text-primary hover:text-primary/80">
-                <span>View sample care guide</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+            <Link href="/care-guides" className="inline-flex items-center font-montserrat font-medium text-primary hover:text-primary/80">
+              <span>View sample care guide</span>
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
         </div>
