@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth.tsx";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/auth/LoginModal";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,11 +29,35 @@ import {
   LogOut
 } from "lucide-react";
 
+interface CartItem {
+  id: number;
+  userId: number;
+  plantId: number;
+  quantity: number;
+  addedAt: string;
+}
+
 const Header = () => {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginType, setLoginType] = useState<'corporate' | 'vendor'>('corporate');
+  const [cartCount, setCartCount] = useState(0);
+
+  // Fetch cart items to show count in header
+  const { data: cartItems } = useQuery<CartItem[]>({
+    queryKey: ['/api/cart'],
+    enabled: !!user && user.userType === 'corporate',
+  });
+
+  // Update cart count when cart items change
+  useEffect(() => {
+    if (cartItems && cartItems.length > 0) {
+      setCartCount(cartItems.length);
+    } else {
+      setCartCount(0);
+    }
+  }, [cartItems]);
 
   const handleLoginClick = (type: 'corporate' | 'vendor') => {
     setLoginType(type);
@@ -82,8 +108,27 @@ const Header = () => {
                 <Search className="h-5 w-5 text-foreground hover:text-primary transition-colors" />
               </Button>
               
-              <Button variant="ghost" size="icon" className="hidden md:flex">
-                <ShoppingCart className="h-5 w-5 text-foreground hover:text-primary transition-colors" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hidden md:flex relative"
+                asChild={!!(user && user.userType === 'corporate')}
+              >
+                {user && user.userType === 'corporate' ? (
+                  <Link href="/cart">
+                    <ShoppingCart className={`h-5 w-5 ${isActive('/cart') ? 'text-primary' : 'text-foreground hover:text-primary'} transition-colors`} />
+                    {cartCount > 0 && (
+                      <Badge 
+                        variant="secondary"
+                        className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary text-white"
+                      >
+                        {cartCount}
+                      </Badge>
+                    )}
+                  </Link>
+                ) : (
+                  <ShoppingCart className="h-5 w-5 text-foreground hover:text-primary transition-colors" />
+                )}
               </Button>
               
               {user ? (
@@ -163,6 +208,16 @@ const Header = () => {
                         </a>
                       </Link>
                     </SheetClose>
+                    {user && user.userType === 'corporate' && (
+                      <SheetClose asChild>
+                        <Link href="/cart">
+                          <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors flex items-center">
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Cart {cartCount > 0 && <Badge className="ml-2 bg-primary text-white">{cartCount}</Badge>}
+                          </a>
+                        </Link>
+                      </SheetClose>
+                    )}
                     <SheetClose asChild>
                       <Link href="/dashboard">
                         <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">

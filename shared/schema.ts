@@ -17,6 +17,9 @@ export const waterRequirementEnum = pgEnum('water_requirement', ['low', 'medium'
 // Order Status Enum
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'processing', 'shipped', 'delivered', 'canceled']);
 
+// Payment Method Enum
+export const paymentMethodEnum = pgEnum('payment_method', ['credit_card', 'debit_card', 'upi', 'net_banking', 'cash_on_delivery']);
+
 // Users Table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -100,6 +103,26 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Cart Items Table
+export const cartItems = pgTable("cart_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  plantId: integer("plant_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  addedAt: timestamp("added_at").defaultNow().notNull(),
+});
+
+// Payment Information Table
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  amount: doublePrecision("amount").notNull(),
+  paymentStatus: text("payment_status").notNull(),
+  transactionId: text("transaction_id"),
+  paymentDate: timestamp("payment_date").defaultNow().notNull(),
+});
+
 // Define insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertPlantSchema = createInsertSchema(plants).omit({ id: true, createdAt: true });
@@ -108,6 +131,8 @@ export const insertPlantCategorySchema = createInsertSchema(plantCategories).omi
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, orderDate: true });
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
+export const insertCartItemSchema = createInsertSchema(cartItems).omit({ id: true, addedAt: true });
+export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, paymentDate: true });
 
 // Define types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -130,3 +155,9 @@ export type OrderItem = typeof orderItems.$inferSelect;
 
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Review = typeof reviews.$inferSelect;
+
+export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+export type CartItem = typeof cartItems.$inferSelect;
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;

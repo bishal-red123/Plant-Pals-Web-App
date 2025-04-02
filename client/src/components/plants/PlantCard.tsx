@@ -11,6 +11,7 @@ import {
 import { Plant } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import AddToCartButton from "./AddToCartButton";
 
 interface PlantCardProps {
   plant: Plant;
@@ -40,7 +41,7 @@ const PlantCard = ({ plant }: PlantCardProps) => {
       <div className="relative">
         <Link href={`/plants/${plant.id}`}>
           <img 
-            src={plant.imageUrl} 
+            src={(plant.imageUrl as string) || '/placeholder-plant.jpg'} 
             alt={plant.name} 
             className="w-full h-48 object-cover cursor-pointer" 
           />
@@ -96,9 +97,12 @@ const PlantCard = ({ plant }: PlantCardProps) => {
             </div>
           </div>
           
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3 py-1.5 rounded-lg">
-            Add to Cart
-          </Button>
+          <AddToCartButton 
+            plantId={plant.id} 
+            inStock={plant.inStock !== undefined ? plant.inStock : true} 
+            size="sm"
+            showText={true}
+          />
         </div>
       </div>
     </div>

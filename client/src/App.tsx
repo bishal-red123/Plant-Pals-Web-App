@@ -11,6 +11,9 @@ import Vendors from "@/pages/Vendors";
 import VendorDetail from "@/pages/VendorDetail";
 import CareGuides from "@/pages/CareGuides";
 import Dashboard from "@/pages/Dashboard";
+import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -27,6 +30,9 @@ function Router() {
           <Route path="/vendors/:id" component={VendorDetail} />
           <Route path="/care-guides" component={CareGuides} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/cart" component={Cart} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/checkout-success" component={CheckoutSuccess} />
           <Route component={NotFound} />
         </Switch>
       </main>

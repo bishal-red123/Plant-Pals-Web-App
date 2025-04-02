@@ -8,12 +8,25 @@ import {
   insertOrderSchema, 
   insertOrderItemSchema, 
   insertReviewSchema,
+  insertCartItemSchema,
+  insertPaymentSchema,
   orderStatusEnum
 } from "@shared/schema";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import MemoryStore from "memorystore";
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn('STRIPE_SECRET_KEY is not set. Stripe payment features will not work');
+}
+
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+    })
+  : null;
 
 const SessionStore = MemoryStore(session);
 
@@ -376,7 +389,317 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cart routes
+  app.get("/api/cart", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const cartItems = await storage.getCartItems(user.id);
+      
+      // Get full details for each plant in the cart
+      const cartItemsWithDetails = await Promise.all(
+        cartItems.map(async (item) => {
+          const plant = await storage.getPlantById(item.plantId);
+          return {
+            ...item,
+            plant
+          };
+        })
+      );
+      
+      res.json(cartItemsWithDetails);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/cart", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const cartItemData = insertCartItemSchema.parse(req.body);
+      
+      // Ensure userId is set to the current user's id
+      cartItemData.userId = user.id;
+      
+      // Check if the plant exists
+      const plant = await storage.getPlantById(cartItemData.plantId);
+      if (!plant) {
+        return res.status(404).json({ message: "Plant not found" });
+      }
+      
+      // Check if plant is in stock
+      if (!plant.inStock) {
+        return res.status(400).json({ message: "Plant is out of stock" });
+      }
+      
+      const cartItem = await storage.addCartItem(cartItemData);
+      res.status(201).json(cartItem);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/cart/:plantId", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const plantId = parseInt(req.params.plantId);
+      const { quantity } = req.body;
+      
+      if (typeof quantity !== 'number' || quantity < 1) {
+        return res.status(400).json({ message: "Invalid quantity" });
+      }
+      
+      const updatedItem = await storage.updateCartItemQuantity(user.id, plantId, quantity);
+      if (!updatedItem) {
+        return res.status(404).json({ message: "Cart item not found" });
+      }
+      
+      res.json(updatedItem);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/cart/:plantId", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const plantId = parseInt(req.params.plantId);
+      
+      const removed = await storage.removeCartItem(user.id, plantId);
+      if (!removed) {
+        return res.status(404).json({ message: "Cart item not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/cart", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      await storage.clearCart(user.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Checkout and payment routes
+  app.post("/api/checkout", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable." });
+      }
+
+      const user = req.user as any;
+      
+      // Get cart items
+      const cartItems = await storage.getCartItems(user.id);
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+      
+      // Calculate total amount
+      let totalAmount = 0;
+      const items = await Promise.all(
+        cartItems.map(async (item) => {
+          const plant = await storage.getPlantById(item.plantId);
+          if (!plant) {
+            throw new Error(`Plant with id ${item.plantId} not found`);
+          }
+          
+          if (!plant.inStock) {
+            throw new Error(`Plant "${plant.name}" is out of stock`);
+          }
+          
+          const itemTotal = plant.price * item.quantity;
+          totalAmount += itemTotal;
+          
+          return {
+            id: item.id,
+            plantId: item.plantId,
+            name: plant.name,
+            price: plant.price,
+            quantity: item.quantity,
+            total: itemTotal
+          };
+        })
+      );
+
+      // Create payment intent with Stripe
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount * 100), // convert to cents
+        currency: "usd",
+        metadata: {
+          userId: user.id.toString(),
+          userEmail: user.email
+        }
+      });
+      
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        totalAmount,
+        items
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/payment/success", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { paymentIntentId, vendorId } = req.body;
+      
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: "paymentIntentId is required" });
+      }
+      
+      if (!vendorId) {
+        return res.status(400).json({ message: "vendorId is required" });
+      }
+      
+      // Verify that vendor exists
+      const vendor = await storage.getVendorById(vendorId);
+      if (!vendor) {
+        return res.status(404).json({ message: "Vendor not found" });
+      }
+      
+      // Get cart items
+      const cartItems = await storage.getCartItems(user.id);
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+      
+      // Calculate total amount
+      let totalAmount = 0;
+      const items = await Promise.all(
+        cartItems.map(async (item) => {
+          const plant = await storage.getPlantById(item.plantId);
+          if (!plant) {
+            throw new Error(`Plant with id ${item.plantId} not found`);
+          }
+          
+          const itemTotal = plant.price * item.quantity;
+          totalAmount += itemTotal;
+          
+          return {
+            plantId: item.plantId,
+            quantity: item.quantity,
+            pricePerUnit: plant.price
+          };
+        })
+      );
+      
+      // Create order
+      const order = await storage.createOrder({
+        vendorId,
+        userId: user.id,
+        totalAmount,
+        status: "pending",
+        deliveryDate: null,
+        trackingNumber: null,
+        notes: null
+      });
+      
+      // Add order items
+      for (const item of items) {
+        await storage.addOrderItem({
+          orderId: order.id,
+          plantId: item.plantId,
+          quantity: item.quantity,
+          pricePerUnit: item.pricePerUnit
+        });
+      }
+      
+      // Record payment
+      const payment = await storage.createPayment({
+        orderId: order.id,
+        paymentMethod: "credit_card",
+        amount: totalAmount,
+        paymentStatus: "completed",
+        transactionId: paymentIntentId
+      });
+      
+      // Clear the cart
+      await storage.clearCart(user.id);
+      
+      res.json({
+        success: true,
+        order,
+        payment
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
   // Create HTTP server
+  // Stripe payment processing
+  app.post("/api/create-payment-intent", isAuthenticated, isCorporate, async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable." });
+      }
+
+      const { amount } = req.body;
+      
+      if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "inr", // Using INR for the Indian market
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to create payment intent" });
+    }
+  });
+
+  // Handle webhook events from Stripe (for production)
+  app.post('/api/webhook', async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ message: "Stripe is not configured" });
+    }
+
+    const payload = req.body;
+    
+    try {
+      // In production, this should verify the webhook signature
+      // const event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
+      const event = payload;
+
+      // Handle the event
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+          // Process fulfillment here
+          break;
+        case 'payment_intent.payment_failed':
+          const failedIntent = event.data.object;
+          console.log(`Payment failed: ${failedIntent.last_payment_error?.message}`);
+          break;
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (err: any) {
+      res.status(400).json({ message: `Webhook Error: ${err.message}` });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

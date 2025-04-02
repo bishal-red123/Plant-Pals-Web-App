@@ -5,7 +5,9 @@ import {
   plantCategories, type PlantCategory, type InsertPlantCategory,
   orders, type Order, type InsertOrder,
   orderItems, type OrderItem, type InsertOrderItem,
-  reviews, type Review, type InsertReview
+  reviews, type Review, type InsertReview,
+  cartItems, type CartItem, type InsertCartItem,
+  payments, type Payment, type InsertPayment
 } from "@shared/schema";
 
 export interface IStorage {
@@ -49,6 +51,18 @@ export interface IStorage {
   getReviewsByPlant(plantId: number): Promise<Review[]>;
   getReviewsByVendor(vendorId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
+
+  // Cart operations
+  getCartItems(userId: number): Promise<CartItem[]>;
+  getCartItem(userId: number, plantId: number): Promise<CartItem | undefined>;
+  addCartItem(cartItem: InsertCartItem): Promise<CartItem>;
+  updateCartItemQuantity(userId: number, plantId: number, quantity: number): Promise<CartItem | undefined>;
+  removeCartItem(userId: number, plantId: number): Promise<boolean>;
+  clearCart(userId: number): Promise<boolean>;
+  
+  // Payment operations
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPaymentByOrderId(orderId: number): Promise<Payment | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -59,6 +73,8 @@ export class MemStorage implements IStorage {
   private orders: Map<number, Order>;
   private orderItems: Map<number, OrderItem>;
   private reviews: Map<number, Review>;
+  private cartItems: Map<number, CartItem>;
+  private payments: Map<number, Payment>;
   
   private userIdCounter: number;
   private plantIdCounter: number;
@@ -67,6 +83,8 @@ export class MemStorage implements IStorage {
   private orderIdCounter: number;
   private orderItemIdCounter: number;
   private reviewIdCounter: number;
+  private cartItemIdCounter: number;
+  private paymentIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -76,6 +94,8 @@ export class MemStorage implements IStorage {
     this.orders = new Map();
     this.orderItems = new Map();
     this.reviews = new Map();
+    this.cartItems = new Map();
+    this.payments = new Map();
     
     this.userIdCounter = 1;
     this.plantIdCounter = 1;
@@ -84,6 +104,8 @@ export class MemStorage implements IStorage {
     this.orderIdCounter = 1;
     this.orderItemIdCounter = 1;
     this.reviewIdCounter = 1;
+    this.cartItemIdCounter = 1;
+    this.paymentIdCounter = 1;
     
     // Seed initial data
     this.seedData();
@@ -261,6 +283,81 @@ export class MemStorage implements IStorage {
     const review: Review = { ...insertReview, id, createdAt: now };
     this.reviews.set(id, review);
     return review;
+  }
+
+  // Cart operations
+  async getCartItems(userId: number): Promise<CartItem[]> {
+    return Array.from(this.cartItems.values()).filter(
+      (item) => item.userId === userId
+    );
+  }
+
+  async getCartItem(userId: number, plantId: number): Promise<CartItem | undefined> {
+    return Array.from(this.cartItems.values()).find(
+      (item) => item.userId === userId && item.plantId === plantId
+    );
+  }
+
+  async addCartItem(insertCartItem: InsertCartItem): Promise<CartItem> {
+    // Check if this user already has this plant in their cart
+    const existingItem = await this.getCartItem(insertCartItem.userId, insertCartItem.plantId);
+    
+    if (existingItem) {
+      // Update the quantity of the existing item
+      return this.updateCartItemQuantity(
+        existingItem.userId, 
+        existingItem.plantId, 
+        existingItem.quantity + (insertCartItem.quantity || 1)
+      ) as Promise<CartItem>;
+    }
+    
+    // Create a new cart item
+    const id = this.cartItemIdCounter++;
+    const now = new Date();
+    const cartItem: CartItem = { ...insertCartItem, id, addedAt: now };
+    this.cartItems.set(id, cartItem);
+    return cartItem;
+  }
+
+  async updateCartItemQuantity(userId: number, plantId: number, quantity: number): Promise<CartItem | undefined> {
+    const cartItem = await this.getCartItem(userId, plantId);
+    if (!cartItem) return undefined;
+    
+    const updatedItem: CartItem = { ...cartItem, quantity };
+    this.cartItems.set(cartItem.id, updatedItem);
+    return updatedItem;
+  }
+
+  async removeCartItem(userId: number, plantId: number): Promise<boolean> {
+    const cartItem = await this.getCartItem(userId, plantId);
+    if (!cartItem) return false;
+    
+    return this.cartItems.delete(cartItem.id);
+  }
+
+  async clearCart(userId: number): Promise<boolean> {
+    const cartItems = await this.getCartItems(userId);
+    
+    for (const item of cartItems) {
+      this.cartItems.delete(item.id);
+    }
+    
+    return true;
+  }
+
+  // Payment operations
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const id = this.paymentIdCounter++;
+    const now = new Date();
+    const payment: Payment = { ...insertPayment, id, paymentDate: now };
+    this.payments.set(id, payment);
+    return payment;
+  }
+
+  async getPaymentByOrderId(orderId: number): Promise<Payment | undefined> {
+    return Array.from(this.payments.values()).find(
+      (payment) => payment.orderId === orderId
+    );
   }
 
   // Seed data for initial application state
@@ -461,6 +558,115 @@ export class MemStorage implements IStorage {
         categoryName: "Tropical Plants"
       });
 
+      // Add more Indian tropical flowering plants
+      const plant5 = await this.createPlant({
+        name: "Hibiscus",
+        scientificName: "Hibiscus rosa-sinensis",
+        description: "Vibrant tropical flowering plant popular in Indian gardens and homes",
+        price: 35.00,
+        difficulty: "beginner",
+        waterRequirement: "medium",
+        lightRequirement: "high",
+        imageUrl: "https://images.unsplash.com/photo-1596439757869-7aa082404d53?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        vendorId: v2.id,
+        inStock: true
+      });
+
+      await this.createCareGuide({
+        plantId: plant5.id,
+        wateringInstructions: "Keep soil consistently moist but not soggy, water when top inch is dry.",
+        lightInstructions: "Needs plenty of bright sunlight for optimal flowering.",
+        temperatureRange: "70-90°F",
+        additionalCare: "Flourishes in high humidity. Fertilize biweekly during growing season.",
+        weeklyRoutine: "Check soil moisture, remove any spent flowers to promote new blooms.",
+        troubleshooting: "Yellowing leaves may indicate overwatering, while lack of flowers suggests insufficient light."
+      });
+
+      await this.addPlantCategory({
+        plantId: plant5.id,
+        categoryName: "Flowering Plants"
+      });
+      await this.addPlantCategory({
+        plantId: plant5.id,
+        categoryName: "Tropical Plants"
+      });
+      await this.addPlantCategory({
+        plantId: plant5.id,
+        categoryName: "Indian Native"
+      });
+
+      const plant6 = await this.createPlant({
+        name: "Mogra (Arabian Jasmine)",
+        scientificName: "Jasminum sambac",
+        description: "Intensely fragrant white flowers, culturally significant in Indian homes and gardens",
+        price: 40.00,
+        difficulty: "beginner",
+        waterRequirement: "medium",
+        lightRequirement: "medium",
+        imageUrl: "https://images.unsplash.com/photo-1591378603223-e15b45a81640?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        vendorId: v1.id,
+        inStock: true
+      });
+
+      await this.createCareGuide({
+        plantId: plant6.id,
+        wateringInstructions: "Keep soil evenly moist, especially during flowering.",
+        lightInstructions: "Thrives in bright, indirect light. Some morning sun is beneficial.",
+        temperatureRange: "65-85°F",
+        additionalCare: "Enjoys humidity. Prune after flowering to maintain shape.",
+        weeklyRoutine: "Check moisture, mist leaves, and inspect for pests.",
+        troubleshooting: "Dropping buds may indicate temperature fluctuations or water stress."
+      });
+
+      await this.addPlantCategory({
+        plantId: plant6.id,
+        categoryName: "Flowering Plants"
+      });
+      await this.addPlantCategory({
+        plantId: plant6.id,
+        categoryName: "Fragrant Plants"
+      });
+      await this.addPlantCategory({
+        plantId: plant6.id,
+        categoryName: "Indian Native"
+      });
+
+      const plant7 = await this.createPlant({
+        name: "Plumeria (Champa)",
+        scientificName: "Plumeria rubra",
+        description: "Beautiful fragrant flowers in white, yellow, and pink, perfect for Indian climate",
+        price: 55.00,
+        difficulty: "intermediate",
+        waterRequirement: "low",
+        lightRequirement: "high",
+        imageUrl: "https://images.unsplash.com/photo-1570824066858-cf4eeba0e9e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        vendorId: v3.id,
+        inStock: true
+      });
+
+      await this.createCareGuide({
+        plantId: plant7.id,
+        wateringInstructions: "Allow soil to dry out between waterings. Reduce during winter.",
+        lightInstructions: "Full sun to partial shade. Needs 6+ hours of sunlight for optimal flowering.",
+        temperatureRange: "65-90°F",
+        additionalCare: "Drought tolerant once established. Protect from frost.",
+        weeklyRoutine: "Check soil dryness, inspect for pests, remove dead flowers.",
+        troubleshooting: "Yellowing leaves during growing season might indicate overwatering."
+      });
+
+      await this.addPlantCategory({
+        plantId: plant7.id,
+        categoryName: "Flowering Plants"
+      });
+      await this.addPlantCategory({
+        plantId: plant7.id,
+        categoryName: "Drought Tolerant"
+      });
+      await this.addPlantCategory({
+        plantId: plant7.id,
+        categoryName: "Tropical Plants"
+      });
+
       // Seed reviews
       await this.createReview({
         userId: (await corporate1).id,
@@ -484,6 +690,22 @@ export class MemStorage implements IStorage {
         vendorId: v3.id,
         rating: 5,
         comment: "Perfect for our low-light office corners. Zero maintenance!"
+      });
+      
+      await this.createReview({
+        userId: (await corporate1).id,
+        plantId: plant5.id,
+        vendorId: v2.id,
+        rating: 5,
+        comment: "The hibiscus brings a vibrant pop of color to our office. Clients love it!"
+      });
+      
+      await this.createReview({
+        userId: (await corporate1).id,
+        plantId: plant6.id,
+        vendorId: v1.id,
+        rating: 5,
+        comment: "The fragrance of mogra fills our reception area. Perfect choice for our Mumbai office."
       });
     });
   }
