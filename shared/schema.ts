@@ -151,7 +151,9 @@ export const insertPlantCategorySchema = createInsertSchema(plantCategories).omi
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, orderDate: true });
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
-export const insertCartItemSchema = createInsertSchema(cartItems).omit({ id: true, addedAt: true });
+export const insertCartItemSchema = createInsertSchema(cartItems).omit({ id: true, addedAt: true }).extend({
+  quantity: z.number().min(1).default(1),
+});
 export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, paymentDate: true });
 
 // Define types

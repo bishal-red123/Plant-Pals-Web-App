@@ -55,7 +55,7 @@ const PlantDetail = () => {
       if (!data?.plant) throw new Error("No plant data");
       const response = await apiRequest('POST', '/api/cart', { 
         plantId: data.plant.id,
-        quantity: 1
+        quantity: 1  // Explicitly set quantity as a number
       });
       return response;
     },
