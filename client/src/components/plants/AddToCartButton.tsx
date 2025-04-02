@@ -36,10 +36,12 @@ export default function AddToCartButton({
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', '/api/cart', { 
-        plantId,
-        quantity: 1
+      const response = await apiRequest('POST', '/api/cart', { 
+        plantId: plantId,
+        quantity: 1,
+        userId: user!.id // This will be overridden by the server
       });
+      return response;
     },
     onSuccess: () => {
       setAdded(true);

@@ -307,14 +307,20 @@ export class MemStorage implements IStorage {
       return this.updateCartItemQuantity(
         existingItem.userId, 
         existingItem.plantId, 
-        existingItem.quantity + (insertCartItem.quantity || 1)
+        existingItem.quantity + insertCartItem.quantity
       ) as Promise<CartItem>;
     }
     
     // Create a new cart item
     const id = this.cartItemIdCounter++;
     const now = new Date();
-    const cartItem: CartItem = { ...insertCartItem, id, addedAt: now };
+    const cartItem: CartItem = { 
+      id,
+      userId: insertCartItem.userId,
+      plantId: insertCartItem.plantId,
+      quantity: insertCartItem.quantity, 
+      addedAt: now 
+    };
     this.cartItems.set(id, cartItem);
     return cartItem;
   }
