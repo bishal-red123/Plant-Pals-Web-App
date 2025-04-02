@@ -73,38 +73,28 @@ const Header = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-2">
               <Leaf className="text-primary text-2xl" />
-              <Link href="/">
-                <h1 className="text-xl md:text-2xl font-montserrat font-bold text-foreground cursor-pointer">
+              <Link href="/" className="cursor-pointer">
+                <h1 className="text-xl md:text-2xl font-montserrat font-bold text-foreground">
                   <span className="text-primary">Plant</span>Pals
                 </h1>
               </Link>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/plants">
-                <a className={`font-montserrat text-sm font-medium ${isActive('/plants') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
-                  Plants
-                </a>
+              <Link href="/plants" className={`font-montserrat text-sm font-medium ${isActive('/plants') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                Plants
               </Link>
-              <Link href="/vendors">
-                <a className={`font-montserrat text-sm font-medium ${isActive('/vendors') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
-                  Vendors
-                </a>
+              <Link href="/vendors" className={`font-montserrat text-sm font-medium ${isActive('/vendors') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                Vendors
               </Link>
-              <Link href="/care-guides">
-                <a className={`font-montserrat text-sm font-medium ${isActive('/care-guides') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
-                  Care Guides
-                </a>
+              <Link href="/care-guides" className={`font-montserrat text-sm font-medium ${isActive('/care-guides') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                Care Guides
               </Link>
-              <Link href="/for-business">
-                <a className={`font-montserrat text-sm font-medium ${isActive('/for-business') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
-                  For Business
-                </a>
+              <Link href="/for-business" className={`font-montserrat text-sm font-medium ${isActive('/for-business') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                For Business
               </Link>
-              <Link href="/become-vendor">
-                <a className={`font-montserrat text-sm font-medium ${isActive('/become-vendor') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
-                  Become a Vendor
-                </a>
+              <Link href="/become-vendor" className={`font-montserrat text-sm font-medium ${isActive('/become-vendor') ? 'text-primary' : 'hover:text-primary'} transition-colors`}>
+                Become a Vendor
               </Link>
             </div>
             
@@ -146,10 +136,10 @@ const Header = () => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/dashboard">Dashboard</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={logout}>
@@ -186,55 +176,41 @@ const Header = () => {
                 <SheetContent>
                   <div className="grid gap-4 py-4">
                     <SheetClose asChild>
-                      <Link href="/plants">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          Plants
-                        </a>
+                      <Link href="/plants" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        Plants
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/vendors">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          Vendors
-                        </a>
+                      <Link href="/vendors" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        Vendors
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/care-guides">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          Care Guides
-                        </a>
+                      <Link href="/care-guides" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        Care Guides
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/for-business">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          For Business
-                        </a>
+                      <Link href="/for-business" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        For Business
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/become-vendor">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          Become a Vendor
-                        </a>
+                      <Link href="/become-vendor" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        Become a Vendor
                       </Link>
                     </SheetClose>
                     {user && user.userType === 'corporate' && (
                       <SheetClose asChild>
-                        <Link href="/cart">
-                          <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors flex items-center">
-                            <ShoppingCart className="mr-2 h-4 w-4" />
-                            Cart {cartCount > 0 && <Badge className="ml-2 bg-primary text-white">{cartCount}</Badge>}
-                          </a>
+                        <Link href="/cart" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors flex items-center">
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          Cart {cartCount > 0 && <Badge className="ml-2 bg-primary text-white">{cartCount}</Badge>}
                         </Link>
                       </SheetClose>
                     )}
                     <SheetClose asChild>
-                      <Link href="/dashboard">
-                        <a className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
-                          My Account
-                        </a>
+                      <Link href="/dashboard" className="font-montserrat px-2 py-1 text-foreground hover:text-primary transition-colors">
+                        My Account
                       </Link>
                     </SheetClose>
                     {user && (
